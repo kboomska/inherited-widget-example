@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:inherited_widget_example/widget/inherited_notifier.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  MyApp({super.key});
+
+  /// Экземпляр модели счетчика.
+  final _model = CounterModel();
 
   @override
   Widget build(BuildContext context) {
@@ -13,12 +17,16 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         useMaterial3: true,
       ),
-      home: const MyHomePage(title: 'Inherited Widget Example'),
+      // Внедряем в Дерево зависимость от модели CounterModel.
+      home: CounterModelProvider(
+        model: _model,
+        child: const MyHomePage(title: 'Inherited Widget Example'),
+      ),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
+class MyHomePage extends StatelessWidget {
   const MyHomePage({
     super.key,
     required this.title,
@@ -27,24 +35,21 @@ class MyHomePage extends StatefulWidget {
   final String title;
 
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
-
-  void _incrementCounter() {
-    setState(() {
-      _counter++;
-    });
-  }
-
-  @override
   Widget build(BuildContext context) {
+    /// Значение счетчика (а также других полей и методов) доступно для чтения
+    /// из модели через BuildContext.
+    ///
+    /// В данном случае, нам понадобится метод watch для отслеживания за изменениями
+    /// модели. При этом мы корректно обновляем только те виджеты, которые зависят
+    /// от модели CounterModel, даже если это StatelessWidget.
+    final counter = CounterModelProvider.watch(context)?.counter;
+    final incrementCounter =
+        CounterModelProvider.read(context)?.incrementCounter;
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        title: Text(widget.title),
+        title: Text(title),
       ),
       body: Center(
         child: Column(
@@ -54,14 +59,14 @@ class _MyHomePageState extends State<MyHomePage> {
               'You have pushed the button this many times:',
             ),
             Text(
-              '$_counter',
+              '$counter',
               style: Theme.of(context).textTheme.headlineMedium,
             ),
           ],
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
+        onPressed: incrementCounter,
         tooltip: 'Increment',
         child: const Icon(Icons.add),
       ),
