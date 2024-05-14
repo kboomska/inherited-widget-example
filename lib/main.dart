@@ -18,7 +18,9 @@ class MyApp extends StatelessWidget {
   }
 }
 
+/// Основной виджет страницы счетчика.
 class MyHomePage extends StatefulWidget {
+  /// Основной виджет страницы счетчика.
   const MyHomePage({
     super.key,
     required this.title,
@@ -30,6 +32,10 @@ class MyHomePage extends StatefulWidget {
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
+/// Состояние для виджета [MyHomePage], которое хранит переменную [_counter],
+/// позволяет увеличить значение переменной с помощью метода [_incrementCounter],
+/// а также ответственно за перерисовку виджетов возвращаемых в методе [build]
+/// используя метод [setState].
 class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
 
@@ -54,6 +60,8 @@ class _MyHomePageState extends State<MyHomePage> {
               'You have pushed the button this many times:',
             ),
             Text(
+              // Отображение текущего значения счетчика хранимого в стейте
+              // и обновляемого при каждом вызове метода build.
               '$_counter',
               style: Theme.of(context).textTheme.headlineMedium,
             ),
