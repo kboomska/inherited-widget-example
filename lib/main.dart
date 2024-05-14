@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:inherited_widget_example/widget/inherited_widget.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  MyApp({super.key});
+
+  /// Экземпляр модели счетчика.
+  final _model = CounterModel();
 
   @override
   Widget build(BuildContext context) {
@@ -13,7 +17,11 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         useMaterial3: true,
       ),
-      home: const MyHomePage(title: 'Inherited Widget Example'),
+      // Внедряем в Дерево зависимость от модели CounterModel.
+      home: CounterModelProvider(
+        model: _model,
+        child: const MyHomePage(title: 'Inherited Widget Example'),
+      ),
     );
   }
 }
@@ -31,16 +39,21 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
-
-  void _incrementCounter() {
-    setState(() {
-      _counter++;
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
+    /// Значение счетчика (а также других полей и методов) доступно для чтения
+    /// из модели через BuildContext.
+    ///
+    /// В данном случае, мы просто обращаемся к значению счетчика методом read,
+    /// а не подписываемся на его изменения, т.к. при нажатии на кнопку увеличения
+    /// значения счетчика в данном примере вызывается метод setState, который
+    /// отвечает за вызов метода build и перерисовку возвращаемых виджетов.
+    /// Таким образом, при каждом вызове метода build мы получаем текущее значение
+    /// счетчика из модели.
+    final counter = CounterModelProvider.read(context)?.model.counter;
+    final incrementCounter =
+        CounterModelProvider.read(context)?.model.incrementCounter;
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
@@ -54,14 +67,19 @@ class _MyHomePageState extends State<MyHomePage> {
               'You have pushed the button this many times:',
             ),
             Text(
-              '$_counter',
+              '$counter',
               style: Theme.of(context).textTheme.headlineMedium,
             ),
           ],
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
+        onPressed: () {
+          incrementCounter?.call();
+          // Нам все еще требуется обновлять экран для отображения текущего значения
+          // счетчика. На данном этапе продолжим использовать метод setState.
+          setState(() {});
+        },
         tooltip: 'Increment',
         child: const Icon(Icons.add),
       ),
